@@ -1,0 +1,17 @@
+todo-item {
+  cursor: pointer;
+}
+todo-item .done {
+  text-decoration: line-through;
+}
+.invisible {
+    display: none;
+}
+budget-category-amount div,
+budget-category-amount input {
+    width: 100%;
+}
+budget-category-title div,
+budget-category-title input {
+    width: 100%;
+}

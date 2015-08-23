@@ -1,0 +1,46 @@
+{
+  "name": "riot-budget",
+  "author": "Remy Honig",
+  "description": "Budgetting app written using ES6, Riot and Redux",
+  "license": "MIT",
+  "version": "0.1.0",
+  "keywords": [
+    "flux",
+    "riot",
+    "riotjs",
+    "es6",
+    "budget"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/remyhonig/riot-budget§"
+  },
+  "dependencies": {
+    "babel-runtime": "^5.8.20",
+    "caret-position": "0.0.1",
+    "lodash": "^3.10.1",
+    "node-uuid": "^1.4.3",
+    "numeral": "^1.5.3",
+    "redux": "^1.0.1",
+    "reselect": "0.0.2",
+    "rx": "^3.0.1",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "babel": "^4.7.12",
+    "babel-loader": "^4.1.0",
+    "chai": "^3.2.0",
+    "mocha": "^2.2.5",
+    "redux-devtools": "^1.0.2",
+    "riot": "^2.0.13",
+    "webpack": "^1.7.3",
+    "webpack-dev-server": "^1.7.0"
+  },
+  "scripts": {
+    "test": "mocha --compilers js:babel/register test/*.js",
+    "build": "webpack --progress --colors",
+    "deploy-gh-pages": "./deploy-gh-pages.sh",
+    "push": "git push --tags origin master",
+    "start": "webpack-dev-server --progress --colors --content-base build"
+  }
+}
