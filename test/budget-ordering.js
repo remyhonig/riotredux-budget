@@ -1,4 +1,3 @@
-import { categoryOrder } from '../src/stores.js';
 import { assert } from 'chai';
 import _ from 'underscore';
 

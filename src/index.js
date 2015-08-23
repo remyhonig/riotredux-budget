@@ -4,14 +4,13 @@
 import 'babel/polyfill';
 import riot from 'riot';
 import { createStore, applyMiddleware, combineReducers } from 'redux';
-import Caret from 'caret-position';
 import { createSelector } from 'reselect';
 
 // application
-import './riot/budget.js'
-import * as reducers from './redux/stores.js';
-import { logger } from './redux/middleware.js';
-import * as view from './stateview.js';
+import 'app/budgeting/tags'
+import * as reducers from 'app/redux/reducers';
+import { logger } from 'app/redux/middleware';
+import * as view from 'app/budgeting/store-view';
 
 const appReducers = combineReducers(reducers);
 const createLoggedStore = applyMiddleware(logger)(createStore);

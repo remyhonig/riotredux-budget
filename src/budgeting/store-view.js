@@ -1,4 +1,4 @@
-import { formatMoney } from './money.js';
+import { formatMoney } from 'app/lib/money';
 
 export const budget = store => () => {
   let categories = store.getState().category;

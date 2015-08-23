@@ -1,7 +1,7 @@
 import riot from 'riot';
 import Rx from 'rx';
 import uuid from 'node-uuid';
-import { formatMoney } from '../money.js';
+import { formatMoney } from 'app/lib/money';
 
 riot.tag('budget',
   `<button type="button" onclick={addSection}>Add Section</button>

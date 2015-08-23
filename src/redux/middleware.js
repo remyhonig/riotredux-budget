@@ -1,3 +1,5 @@
+import Caret from 'caret-position';
+
 export const logger = store => next => action => {
   console.log('dispatch', action);
   let result = next(action);
