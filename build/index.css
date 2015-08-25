@@ -14,3 +14,13 @@ todo-item .done {
     min-height: 50px;
     border-bottom: solid #000000 1px;
 }
+
+ul {
+    list-style: none;
+    padding-bottom: 10px;
+}
+
+budget-category-title span, budget-category-title input {
+    display: inline-block;
+    min-width: 15em;
+}

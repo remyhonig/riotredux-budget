@@ -8,12 +8,14 @@ import Sortable from 'sortablejs/Sortable'
 riot.tag('budget',
   `<button type="button" onclick={addSection}>Add Section</button>
    <ul class="sections">
-     <li data-id="{section.id}" each="{section in opts.stateView().sections}">{section.title}
+     <li data-id="{section.id}" each="{section in opts.stateView().sections}">
+      <span class="drag-handle">☰</span>
       <input name="input" type="text" placeholder="Section" value="{section.title}">
       <strong>{section.total}</strong>
       <button type="button" onclick={addCategory(section.id)}>Add Category</button>
       <ul class="section section-{section.id}">
         <li data-id="{category.id}" store="{parent.opts.store}" each="{category in section.categories}">
+          <span class="drag-handle">☰</span>
           <budget-category-title store="{opts.store}" category="{category}"></budget-category-title>
           <budget-category-amount store="{opts.store}" category="{category}"></budget-category-amount>
         </li>
@@ -34,6 +36,7 @@ riot.tag('budget',
       sortableSections = Sortable.create(self.root.querySelector(".sections"), {
         group: 'sections',
         animation: 100,
+        handle: ".drag-handle",
         onSort: self.onSort
       });
 
@@ -41,6 +44,7 @@ riot.tag('budget',
         Sortable.create(self.root.querySelector(".section-" + item.id), {
           group: 'categories',
           animation: 100,
+          handle: ".drag-handle",
           onAdd: self.onSort
         })
       );
@@ -76,6 +80,7 @@ riot.tag('budget',
   }
 );
 
+
 var saveInputToState = (input, onChange) => {
   let event1 = Rx.Observable.fromEvent(input, 'blur');
   let event2 = Rx.Observable.fromEvent(input, 'keyup')
@@ -89,7 +94,7 @@ var saveInputToState = (input, onChange) => {
 
 riot.tag('budget-category-title',
   `<input class="{editing ? '' : 'invisible'}" name="input" type="text" placeholder="Category" value="{opts.category.title}">
-  <div class="{ editing ? 'invisible' : '' }" onclick={edit}>{opts.category.title}</div>`,
+  <span class="{ editing ? 'invisible' : '' }" onclick={edit}>{opts.category.title}</span>`,
 
   function (opts) {
     let self = this;
@@ -119,8 +124,8 @@ riot.tag('budget-category-title',
 
 
 riot.tag('budget-category-amount',
-  `<div class="{ editing ? 'invisible' : '' }" onclick={edit}>{amount}</div>
-  <input class="{ editing ? '' : 'invisible' }" name="input" type="number" placeholder="Amount" value="{opts.category.amount}">`,
+  `<span class="{ editing ? 'invisible' : '' }" onclick={edit}>{amount}</span>
+  <input class="{ editing ? '' : 'invisible' }" name="input" type="number" placeholder="Amount" value="{opts.category.amount}"></input>`,
 
   function (opts) {
     let self = this;
