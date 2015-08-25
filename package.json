@@ -24,6 +24,7 @@
     "redux": "^1.0.1",
     "reselect": "0.0.2",
     "rx": "^3.0.1",
+    "sortablejs": "^1.2.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
@@ -37,7 +38,6 @@
     "webpack-dev-server": "^1.7.0"
   },
   "scripts": {
-    "setup": "",
     "test": "mocha --compilers js:babel/register test/*.js",
     "build": "webpack --progress --colors",
     "push": "git push --tags origin master",

@@ -7,9 +7,25 @@ describe('ordering of budget categories', () => {
 
   it('should change the section if section is not the same', () => {
 
-    let categorySections = [
-      {category: 1, section: 3},
-      {category: 2, section: 4}
+    let tree = [
+      {
+        section:
+        {
+          id: 3,
+          categories: [
+            {id: 2},
+            {id: 1}
+          ]
+        }
+      },
+      {
+        section: {
+          id: 1,
+          categories: [
+            {id: 2}
+          ]
+        }
+      }
     ];
 
     let expected = [

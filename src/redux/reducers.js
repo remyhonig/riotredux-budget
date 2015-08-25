@@ -1,4 +1,5 @@
 import uuid from 'node-uuid';
+import { moveUpCategory } from 'app/lib/grouped-ordering';
 
 const swap = (state, id, isUpMove) => {
   let oldPos = null;
@@ -23,7 +24,7 @@ const swap = (state, id, isUpMove) => {
   });
 };
 
-export function categoryOrder(state = [], action = {}) {
+function categoryOrder(state = [], action = {}) {
 
   switch (action.type) {
 
@@ -116,6 +117,14 @@ export function category(state = [], action = {}) {
         title: "",
         amount: 0
       }];
+
+    case "CATEGORY_ORDER_UP":
+      let result = moveUpCategory(state, i => i.id, i => i.section)(action.id);
+      console.log(result);
+      return result;
+
+    case "CATEGORY_ORDER_DOWN":
+      return swap(state, action.id, false);
 
     case 'BUDGET_CATEGORY_INIT':
       return [

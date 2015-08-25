@@ -7,11 +7,10 @@ todo-item .done {
 .invisible {
     display: none;
 }
-budget-category-amount div,
-budget-category-amount input {
-    width: 100%;
-}
-budget-category-title div,
-budget-category-title input {
-    width: 100%;
+
+.section {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    min-height: 50px;
+    border-bottom: solid #000000 1px;
 }

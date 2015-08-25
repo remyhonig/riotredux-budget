@@ -2,20 +2,54 @@ import riot from 'riot';
 import Rx from 'rx';
 import uuid from 'node-uuid';
 import { formatMoney } from 'app/lib/money';
+import Sortable from 'sortablejs/Sortable'
+
 
 riot.tag('budget',
   `<button type="button" onclick={addSection}>Add Section</button>
-   <table>
-     <budget-categories each="{section in opts.stateView().sections}" store="{parent.opts.store}" section="{section}"></budget-categories>
-   </table>`,
+   <ul class="sections">
+     <li data-id="{section.id}" each="{section in opts.stateView().sections}">{section.title}
+      <input name="input" type="text" placeholder="Section" value="{section.title}">
+      <strong>{section.total}</strong>
+      <button type="button" onclick={addCategory(section.id)}>Add Category</button>
+      <ul class="section section-{section.id}">
+        <li data-id="{category.id}" store="{parent.opts.store}" each="{category in section.categories}">
+          <budget-category-title store="{opts.store}" category="{category}"></budget-category-title>
+          <budget-category-amount store="{opts.store}" category="{category}"></budget-category-amount>
+        </li>
+      </ul>
+    </li>
+   </ul>`,
 
   function(opts) {
     let self = this;
+    let sortableSections = null;
+    let sortableCategories = [];
+
     this.on('mount', () => {
       opts.store.subscribe(() => {
         self.update()
       });
+
+      sortableSections = Sortable.create(self.root.querySelector(".sections"), {
+        group: 'sections',
+        animation: 100,
+        onSort: self.onSort
+      });
+
+      sortableCategories = opts.store.getState().section.map(item =>
+        Sortable.create(self.root.querySelector(".section-" + item.id), {
+          group: 'categories',
+          animation: 100,
+          onAdd: self.onSort
+        })
+      );
     });
+
+    this.onSort = (event) => {
+      console.log(event);
+      console.log(sortableCategories.map(i => i.toArray()));
+    };
 
     this.addSection = () => {
       let sectionId = uuid.v4();
@@ -31,8 +65,14 @@ riot.tag('budget',
         type: 'SECTION_ORDER_ADD',
         id: sectionId
       });
-    }
+    };
 
+    this.addCategory = sectionId => () => {
+      opts.store.dispatch({
+        type: 'BUDGET_CATEGORY_ADD',
+        section: sectionId
+      });
+    }
   }
 );
 
@@ -45,69 +85,6 @@ var saveInputToState = (input, onChange) => {
     .pluck('target', 'value')
     .forEach(onChange);
 };
-
-riot.tag('budget-categories',
-  `<tr>
-      <th><input name="input" type="text" placeholder="Section" value="{section.title}"></th>
-      <th><strong>{section.total}</strong></th>
-      <th>
-        <button type="button" onclick={moveUp}>Move Up</button>
-        <button type="button" onclick={moveDown}>Move Down</button>
-        <button type="button" onclick={addCategory}>Add Category</button>
-      </th>
-    </tr>
-    <tr each="{category in section.categories}">
-      <td width="200px">
-        <budget-category-title store="{parent.opts.store}" category="{category}"></budget-category-title>
-      </td>
-      <td width="100px">
-        <budget-category-amount store="{parent.opts.store}" category="{category}"></budget-category-amount>
-      </td>
-      <td>
-        <button type="button" onclick={moveCategoryUp}>Move Up</button>
-        <button type="button" onclick={moveCategoryDown}>Move Down</button>
-      </td>
-    </tr>`,
-
-  function (opts) {
-    let self = this;
-
-    this.moveUp = () => {
-      opts.store.dispatch({
-        type: 'SECTION_ORDER_UP',
-        id: opts.section.id
-      });
-    };
-
-    this.moveDown = () => {
-      opts.store.dispatch({
-        type: 'SECTION_ORDER_DOWN',
-        id: opts.section.id
-      });
-    };
-
-    this.moveCategoryUp = () => {
-      opts.store.dispatch({
-        type: 'CATEGORY_ORDER_UP',
-        id: opts.category.id
-      });
-    };
-
-    this.moveCategoryDown = () => {
-      opts.store.dispatch({
-        type: 'CATEGORY_ORDER_DOWN',
-        id: opts.category.id
-      });
-    };
-
-    this.addCategory = () => {
-      opts.store.dispatch({
-        type: 'BUDGET_CATEGORY_ADD',
-        section: opts.section.id
-      });
-    }
-  }
-);
 
 
 riot.tag('budget-category-title',
