@@ -7,75 +7,176 @@ import Sortable from 'sortablejs/Sortable'
 
 riot.tag('budget',
   `<button type="button" onclick={addSection}>Add Section</button>
+
    <ul class="sections">
-     <li data-id="{section.id}" each="{section in opts.stateView().sections}">
-      <span class="drag-handle">☰</span>
-      <input name="input" type="text" placeholder="Section" value="{section.title}">
-      <strong>{section.total}</strong>
-      <button type="button" onclick={addCategory(section.id)}>Add Category</button>
-      <ul class="section section-{section.id}">
-        <li data-id="{category.id}" store="{parent.opts.store}" each="{category in section.categories}">
-          <span class="drag-handle">☰</span>
-          <budget-category-title store="{opts.store}" category="{category}"></budget-category-title>
-          <budget-category-amount store="{opts.store}" category="{category}"></budget-category-amount>
-        </li>
-      </ul>
-    </li>
-   </ul>`,
+      <li data-id="{section.id}" each="{section in opts.stateView().sections}">
+        <span class="drag-handle">☰</span>
+        <input name="input" type="text" placeholder="Section" value="{section.title}">
+        <strong>{section.total}</strong>
+        <button type="button" onclick={addCategory(section.id)}>Add Category</button>
+
+        <ul data-id="{section.id}" class="section">
+          <li data-id="{category.id}" each="{category in section.categories}">
+            <span class="drag-handle">☰</span>
+            <budget-category-title store="{parent.parent.opts.store}" category="{category}"></budget-category-title>
+            <budget-category-amount store="{parent.parent.opts.store}" category="{category}"></budget-category-amount>
+          </li>
+        </ul>
+      </li>
+    </ul>`,
 
   function(opts) {
     let self = this;
     let sortableSections = null;
     let sortableCategories = [];
 
-    this.on('mount', () => {
-      opts.store.subscribe(() => {
-        self.update()
-      });
+    // workaround
+    let reset = (opts) => {
+      let savedStateView = opts.stateView;
+      opts.stateView = () => [];
+      self.update();
+      opts.stateView = savedStateView;
+      self.update();
+    };
 
-      sortableSections = Sortable.create(self.root.querySelector(".sections"), {
-        group: 'sections',
-        animation: 100,
-        handle: ".drag-handle",
-        onSort: self.onSort
-      });
+    /**
+     * Any changes in the application state
+     * @type {Observable}
+     */
+    let stateChangeStream = Rx.Observable.create(observer =>
+      opts.store.subscribe(() => observer.onNext(opts.store.getState()))
+    );
 
-      sortableCategories = opts.store.getState().section.map(item =>
-        Sortable.create(self.root.querySelector(".section-" + item.id), {
-          group: 'categories',
+    /**
+     * Any changes to the view state
+     * @type {Observable}
+     */
+    let updatedViewStream = Rx.Observable.create(observer =>
+      self.on('updated', observer.onNext('updated'))
+    );
+
+    let categoryStateChanged = stateChangeStream
+      .pluck('category')
+      .distinctUntilChanged(
+        x => x.length,
+        (x,y) => x < y
+      )
+      .startWith(null);
+
+    let sectionStateChanged = stateChangeStream
+      .pluck('section')
+      .distinctUntilChanged(x => x.length, (x,y) => x < y)
+      .startWith(null);
+
+    let orderingStateChanged = stateChangeStream
+      .pluck('ordering')
+      .distinctUntilChanged(x => x, (x,y) => JSON.stringify(x) == JSON.stringify(y));
+
+    let sectionMoved = new Rx.Subject();
+    let categoryMoved = new Rx.Subject();
+
+    let getTree = () => {
+      let sections = [...self.root.querySelectorAll('.section')];
+      return sections.map(section => {
+        let categories = [...section.querySelectorAll('li')]
+        return {
+          sectionId: section.getAttribute('data-id'),
+          categories: categories.map(el => el.getAttribute('data-id'))
+        }
+      });
+    }
+
+    this.on('mount', function () {
+
+      sectionStateChanged.subscribe(() => {
+        console.info('sectionStateChanged')
+        reset(opts);
+        var sections = self.root.querySelector('.sections');
+        Sortable.create(sections, {
+          group: 'section',
           animation: 100,
           handle: ".drag-handle",
-          onAdd: self.onSort
-        })
-      );
+          onUpdate: evt => sectionMoved.onNext(getTree())
+        });
+      });
+
+      categoryStateChanged.subscribe(() => {
+        console.info('categoryStateChanged')
+        reset(opts);
+        let sections = [...self.root.querySelectorAll('.section')];
+        let sortables = sections.map(el =>
+          Sortable.create(el, {
+            group: 'category',
+            animation: 100,
+            handle: ".drag-handle",
+            onAdd: evt => categoryMoved.onNext(getTree())
+          })
+        );
+        console.info('categoryStateChanged-done')
+      });
+
+      sectionMoved.subscribe(tree => {
+        console.info('sectionMoved');
+        console.log(tree);
+        opts.store.dispatch({
+          type: 'ORDERING_SET',
+          tree: tree
+        });
+        //reset(opts);
+      });
+
+      categoryMoved.subscribe(tree => {
+        console.info('categoryMoved');
+        console.log(tree);
+        opts.store.dispatch({
+          type: 'ORDERING_SET',
+          tree: tree
+        });
+        //reset(opts);
+      });
     });
 
-    this.onSort = (event) => {
-      console.log(event);
-      console.log(sortableCategories.map(i => i.toArray()));
-    };
 
     this.addSection = () => {
       let sectionId = uuid.v4();
+      let categoryId = uuid.v4();
       opts.store.dispatch({
         type: 'SECTION_ADD',
         id: sectionId
       });
       opts.store.dispatch({
-        type: 'BUDGET_CATEGORY_ADD',
+        type: 'CATEGORY_ADD',
+        categoryId: categoryId,
         section: sectionId
       });
       opts.store.dispatch({
-        type: 'SECTION_ORDER_ADD',
-        id: sectionId
+        type: 'ORDERING_CATEGORY_ADD',
+        sectionId: sectionId,
+        categoryId: categoryId
       });
+      reset(opts);
     };
 
     this.addCategory = sectionId => () => {
+      let categoryId = uuid.v4();
+
       opts.store.dispatch({
-        type: 'BUDGET_CATEGORY_ADD',
-        section: sectionId
+        type: 'CATEGORY_ADD',
+        categoryId: categoryId,
+        sectionId: sectionId
       });
+
+      opts.store.dispatch({
+        type: 'ORDERING_CATEGORY_ADD',
+        sectionId: sectionId,
+        categoryId: categoryId
+      });
+      //
+      //opts.store.dispatch({
+      //  type: 'BUDGET_SET_ORDERING',
+      //  tree: getTree()
+      //});
+      reset(opts);
     }
   }
 );
@@ -113,10 +214,14 @@ riot.tag('budget-category-title',
         self.editing = data == '';
         self.update();
         if (data == opts.category.title) return;
+
         opts.store.dispatch({
-          type: "BUDGET_TITLE_SET",
-          category: Object.assign({}, opts.category, {title: data})
+          type: "CATEGORY_TITLE_SET",
+          categoryId: opts.category.id,
+          categoryTitle: data
         });
+
+        self.parent.update();
       });
     });
   }
@@ -150,9 +255,11 @@ riot.tag('budget-category-amount',
         self.update();
         if (data == opts.category.amount) return;
         opts.store.dispatch({
-          type: "BUDGET_AMOUNT_SET",
+          type: "CATEGORY_AMOUNT_SET",
           category: Object.assign({}, opts.category, { amount: parseFloat(data) })
         });
+
+        self.parent.update();
       });
     });
   }

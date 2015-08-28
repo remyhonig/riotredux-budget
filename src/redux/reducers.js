@@ -1,65 +1,31 @@
 import uuid from 'node-uuid';
 import { moveUpCategory } from 'app/lib/grouped-ordering';
 
-const swap = (state, id, isUpMove) => {
-  let oldPos = null;
-  let newPos = null;
 
-  oldPos = state.indexOf(id);
-  if (isUpMove) {
-    newPos = Math.max(0, oldPos - 1);
-  } else {
-    newPos = Math.min(state.length - 1, oldPos + 1);
-  }
-
-  return state.map(item => {
-    let itemPos = state.indexOf(item);
-    if (itemPos == newPos) {
-      return state[oldPos];
-    }
-    if (itemPos == oldPos) {
-      return state[newPos];
-    }
-    return item;
-  });
-};
-
-function categoryOrder(state = [], action = {}) {
-
+export function ordering(state = [], action = {}) {
   switch (action.type) {
 
-    case "CATEGORY_ORDER_UP":
-      return swap(state, action.id, true);
+    case "ORDERING_SET":
+      return action.tree;
 
-    case "CATEGORY_ORDER_DOWN":
-      return swap(state, action.id, false);
+    case "ORDERING_CATEGORY_ADD":
+      return state.map(section =>
+        section.sectionId == action.sectionId ?
+          Object.assign({}, section, { categories: [...section.categories, action.categoryId] }) :
+          section
+      );
 
-    case "CATEGORY_ORDER_ADD":
-      return [action.id, ...state];
-
-    case "CATEGORY_ORDER_INIT":
-      return [1, 2, 3, 4, 5, 6];
-
-    default:
-      return state;
-  }
-}
-
-export function sectionOrder(state = [], action = {}) {
-
-  switch (action.type) {
-
-    case "SECTION_ORDER_UP":
-      return swap(state, action.id, true);
-
-    case "SECTION_ORDER_DOWN":
-      return swap(state, action.id, false);
-
-    case "SECTION_ORDER_ADD":
-      return [action.id, ...state];
-
-    case "SECTION_ORDER_INIT":
-      return [1, 2];
+    case "ORDERING_INIT":
+      return [
+        {
+          sectionId: "1",
+          categories: ["1", "2", "3"]
+        },
+        {
+          sectionId: "2",
+          categories: ["4", "5", "6"]
+        }
+      ];
 
     default:
       return state;
@@ -71,7 +37,7 @@ export function section(state = [], action = {}) {
 
     case "SECTION_TITLE_SET":
       return state.map(section =>
-          section .id === action.section.id ?
+          section.id === action.section.id ?
             Object.assign({}, section, { title: action.section.title }) :
             section
       );
@@ -84,8 +50,8 @@ export function section(state = [], action = {}) {
 
     case "SECTION_INIT":
       return [
-        {id: 1, title: "Een"},
-        {id: 2, title: "Twee"}
+        {id: "1", title: "Een"},
+        {id: "2", title: "Twee"}
       ];
 
     default:
@@ -96,44 +62,35 @@ export function section(state = [], action = {}) {
 export function category(state = [], action = {}) {
   switch (action.type) {
 
-    case "BUDGET_AMOUNT_SET":
+    case "CATEGORY_AMOUNT_SET":
       return state.map(category =>
           category.id === action.category.id ?
             Object.assign({}, category, { amount: action.category.amount }) :
             category
       );
 
-    case "BUDGET_TITLE_SET":
+    case "CATEGORY_TITLE_SET":
       return state.map(category =>
-          category.id === action.category.id ?
-            Object.assign({}, category, { title: action.category.title }) :
+          category.id === action.categoryId ?
+            Object.assign({}, category, { title: action.categoryTitle }) :
             category
       );
 
-    case "BUDGET_CATEGORY_ADD":
+    case "CATEGORY_ADD":
       return [...state, {
-        id: state.reduce((maxId, item) => Math.max(item.id, maxId), -1) + 1,
-        section: action.section,
+        id: action.categoryId,
         title: "",
         amount: 0
       }];
 
-    case "CATEGORY_ORDER_UP":
-      let result = moveUpCategory(state, i => i.id, i => i.section)(action.id);
-      console.log(result);
-      return result;
-
-    case "CATEGORY_ORDER_DOWN":
-      return swap(state, action.id, false);
-
-    case 'BUDGET_CATEGORY_INIT':
+    case 'CATEGORY_INIT':
       return [
-        {id: 1, section: 1, title: "Leuke Dingen", amount: 100},
-        {id: 2, section: 1, title: "Vakantie", amount: 400},
-        {id: 3, section: 1, title: "Verzekering", amount: 120},
-        {id: 4, section: 2, title: "Leuke Dingen", amount: 300},
-        {id: 5, section: 2, title: "Vakantie", amount: 100},
-        {id: 6, section: 2, title: "Verzekering", amount: 121}
+        {id: "1", title: "Leuke Dingen", amount: 100},
+        {id: "2", title: "Vakantie", amount: 400},
+        {id: "3", title: "Verzekering", amount: 120},
+        {id: "4", title: "Leuke Dingen", amount: 300},
+        {id: "5", title: "Vakantie", amount: 100},
+        {id: "6", title: "Verzekering", amount: 121}
       ];
 
     default:

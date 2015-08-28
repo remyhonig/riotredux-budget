@@ -16,10 +16,9 @@ const appReducers = combineReducers(reducers);
 const createLoggedStore = applyMiddleware(logger)(createStore);
 const appStore = createLoggedStore(appReducers);
 
-appStore.dispatch({type: 'BUDGET_CATEGORY_INIT'});
-appStore.dispatch({type: 'CATEGORY_ORDER_INIT'});
+appStore.dispatch({type: 'ORDERING_INIT'});
+appStore.dispatch({type: 'CATEGORY_INIT'});
 appStore.dispatch({type: 'SECTION_INIT'});
-appStore.dispatch({type: 'SECTION_ORDER_INIT'});
 
 riot.mount('budget', {
   store: appStore,
