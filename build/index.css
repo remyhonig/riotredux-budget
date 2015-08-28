@@ -10,9 +10,7 @@ todo-item .done {
 
 .section {
     margin-top: 10px;
-    margin-bottom: 10px;
     min-height: 50px;
-    border-bottom: solid #000000 1px;
 }
 
 ul {
@@ -23,4 +21,10 @@ ul {
 budget-category-title span, budget-category-title input {
     display: inline-block;
     min-width: 15em;
+}
+
+budget-category-amount span {
+    display: inline-block;
+    text-align: right;
+    width: 7em;
 }
