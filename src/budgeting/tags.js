@@ -27,11 +27,10 @@ riot.tag('budget',
 
   function(opts) {
     let self = this;
-    let sortableSections = null;
-    let sortableCategories = [];
 
     // workaround
-    let reset = (opts) => {
+    let update = (opts) => {
+      console.info('reset');
       let savedStateView = opts.stateView;
       opts.stateView = () => [];
       self.update();
@@ -52,7 +51,10 @@ riot.tag('budget',
      * @type {Observable}
      */
     let updatedViewStream = Rx.Observable.create(observer =>
-      self.on('updated', observer.onNext('updated'))
+      self.on('updated', () => {
+        console.log('update');
+        return observer.onNext('updated')
+      })
     );
 
     let categoryStateChanged = stateChangeStream
@@ -84,58 +86,52 @@ riot.tag('budget',
           categories: categories.map(el => el.getAttribute('data-id'))
         }
       });
-    }
+    };
 
     this.on('mount', function () {
 
-      sectionStateChanged.subscribe(() => {
-        console.info('sectionStateChanged')
-        reset(opts);
+      updatedViewStream.subscribe(() => {
+        console.info('hookup section sortables')
         var sections = self.root.querySelector('.sections');
         Sortable.create(sections, {
           group: 'section',
           animation: 100,
           handle: ".drag-handle",
-          onUpdate: evt => sectionMoved.onNext(getTree())
+          onEnd: evt => sectionMoved.onNext(getTree())
         });
       });
 
-      categoryStateChanged.subscribe(() => {
-        console.info('categoryStateChanged')
-        reset(opts);
+      updatedViewStream.subscribe(() => {
+        console.info('hookup category sortables')
         let sections = [...self.root.querySelectorAll('.section')];
-        let sortables = sections.map(el =>
+        sections.forEach(el =>
           Sortable.create(el, {
             group: 'category',
             animation: 100,
             handle: ".drag-handle",
-            onAdd: evt => categoryMoved.onNext(getTree())
+            onEnd: evt => categoryMoved.onNext(getTree())
           })
         );
-        console.info('categoryStateChanged-done')
       });
 
       sectionMoved.subscribe(tree => {
         console.info('sectionMoved');
-        console.log(tree);
         opts.store.dispatch({
           type: 'ORDERING_SET',
           tree: tree
         });
-        //reset(opts);
+        update(opts);
       });
 
       categoryMoved.subscribe(tree => {
         console.info('categoryMoved');
-        console.log(tree);
         opts.store.dispatch({
           type: 'ORDERING_SET',
           tree: tree
         });
-        //reset(opts);
+        update(opts);
       });
     });
-
 
     this.addSection = () => {
       let sectionId = uuid.v4();
@@ -154,29 +150,22 @@ riot.tag('budget',
         sectionId: sectionId,
         categoryId: categoryId
       });
-      reset(opts);
+      update(opts);
     };
 
     this.addCategory = sectionId => () => {
       let categoryId = uuid.v4();
-
+      opts.store.dispatch({
+          type: 'ORDERING_CATEGORY_ADD',
+          sectionId: sectionId,
+          categoryId: categoryId
+      });
       opts.store.dispatch({
         type: 'CATEGORY_ADD',
         categoryId: categoryId,
         sectionId: sectionId
       });
-
-      opts.store.dispatch({
-        type: 'ORDERING_CATEGORY_ADD',
-        sectionId: sectionId,
-        categoryId: categoryId
-      });
-      //
-      //opts.store.dispatch({
-      //  type: 'BUDGET_SET_ORDERING',
-      //  tree: getTree()
-      //});
-      reset(opts);
+      update(opts);
     }
   }
 );
@@ -230,7 +219,7 @@ riot.tag('budget-category-title',
 
 riot.tag('budget-category-amount',
   `<span class="{ editing ? 'invisible' : '' }" onclick={edit}>{amount}</span>
-  <input class="{ editing ? '' : 'invisible' }" name="input" type="number" placeholder="Amount" value="{opts.category.amount}"></input>`,
+  <input class="{ editing ? '' : 'invisible' }" name="input" type="text" placeholder="Amount" value="{opts.category.amount}"></input>`,
 
   function (opts) {
     let self = this;
