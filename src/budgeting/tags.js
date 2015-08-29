@@ -229,7 +229,9 @@ let inplaceEditableMixin = {
     this.editing = true;
     // rerender tag to update visibility
     this.update();
-    this.root.querySelector('input').focus();
+    let input = this.root.querySelector('input');
+    input.focus();
+    input.setSelectionRange(0, String(this.value).length);
   }
 };
 
