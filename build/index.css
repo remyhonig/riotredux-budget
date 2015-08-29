@@ -18,12 +18,17 @@ ul {
     padding-bottom: 10px;
 }
 
+section-title span, section-title input {
+    display: inline-block;
+    min-width: 21em;
+}
+
 budget-category-title span, budget-category-title input {
     display: inline-block;
     min-width: 15em;
 }
 
-budget-category-amount span {
+budget-category-amount span, budget-category-amount input {
     display: inline-block;
     text-align: right;
     width: 7em;
