@@ -37,8 +37,8 @@ export function section(state = [], action = {}) {
 
     case "SECTION_TITLE_SET":
       return state.map(section =>
-          section.id === action.section.id ?
-            Object.assign({}, section, { title: action.section.title }) :
+          section.id === action.id ?
+            Object.assign({}, section, { title: action.value }) :
             section
       );
 
@@ -64,21 +64,21 @@ export function category(state = [], action = {}) {
 
     case "CATEGORY_AMOUNT_SET":
       return state.map(category =>
-          category.id === action.category.id ?
-            Object.assign({}, category, { amount: action.category.amount }) :
+          category.id === action.id ?
+            Object.assign({}, category, { amount: action.value }) :
             category
       );
 
     case "CATEGORY_TITLE_SET":
       return state.map(category =>
-          category.id === action.categoryId ?
-            Object.assign({}, category, { title: action.categoryTitle }) :
+          category.id === action.id ?
+            Object.assign({}, category, { title: action.value }) :
             category
       );
 
     case "CATEGORY_ADD":
       return [...state, {
-        id: action.categoryId,
+        id: action.id,
         title: "",
         amount: 0
       }];
