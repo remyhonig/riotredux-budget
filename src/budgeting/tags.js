@@ -11,9 +11,8 @@ riot.tag('budget',
         <span class="drag-handle">☰</span>
 
         <section-title
-          store="parent.opts.store"
-          id="{section.id}"
-          value="{section.title}">
+          store={parent.opts.store}
+          id="{section.id}">
         </section-title>
 
         <strong>{section.total}</strong>
@@ -24,15 +23,13 @@ riot.tag('budget',
             <span class="drag-handle">☰</span>
 
             <budget-category-title
-              store="{parent.parent.opts.store}"
-              id="{category.id}"
-              value="{category.title}">
+              store={parent.parent.opts.store}
+              id="{category.id}">
             </budget-category-title>
 
             <budget-category-amount
-              store="{parent.parent.opts.store}"
-              id="{category.id}"
-              value="{category.amount}">
+              store={parent.parent.opts.store}
+              id="{category.id}">
             </budget-category-amount>
           </li>
         </ul>
@@ -143,8 +140,7 @@ riot.tag('budget',
       });
       opts.store.dispatch({
         type: 'CATEGORY_ADD',
-        categoryId: categoryId,
-        section: sectionId
+        id: categoryId
       });
       opts.store.dispatch({
         type: 'ORDERING_CATEGORY_ADD',
@@ -166,8 +162,7 @@ riot.tag('budget',
       });
       opts.store.dispatch({
         type: 'CATEGORY_ADD',
-        categoryId: categoryId,
-        sectionId: sectionId
+        id: categoryId
       });
       updateView();
     }
@@ -182,16 +177,25 @@ let inplaceEditableMixin = {
    */
   editing: null,
 
+  /**
+   * The current value being edited
+   */
+  value: undefined,
+
   persist: function (value) {
     console.log('TODO: Override the this.persist(value)');
+  },
+
+  retrieve: function () {
+    console.log('TODO: Override the this.retrieve()');
   },
 
   init: function () {
     let self = this;
 
     this.on('mount', () => {
-      let value = this.opts.value;
-      self.editing = value == "";
+      self.editing = this.retrieve() == '';
+      self.value = this.retrieve();
       let input = this.root.querySelector('input')
 
       function saveInputToState(input, onChange) {
@@ -206,11 +210,18 @@ let inplaceEditableMixin = {
 
       saveInputToState(input, (data) => {
         self.editing = data == '';
-        self.parent.update();
-        if (data == value) return;
+        if (data == self.value) {
+          self.update();
+          return;
+        }
         this.persist(data);
+        self.value = self.retrieve()
         self.parent.update();
       });
+    })
+
+    this.on('update', () => {
+      self.value = self.retrieve();
     })
   },
 
@@ -223,11 +234,13 @@ let inplaceEditableMixin = {
 };
 
 riot.tag('section-title',
-  `<input class="{editing ? '' : 'invisible'}" name="input" type="text" placeholder="Section" value="{opts.value}">
-  <span class="{ editing ? 'invisible' : '' }" onclick={edit}>{opts.value}</span>`,
+  `<input class="{editing ? '' : 'invisible'}" name="input" type="text" placeholder="Section" value="{value}">
+  <span class="{ editing ? 'invisible' : '' }" onclick={edit}>{value}</span>`,
 
   function (opts) {
     this.mixin(inplaceEditableMixin);
+
+    this.retrieve = () => opts.store.getState().section.find(c => c.id == opts.id).title;
 
     this.persist = (value) => {
       opts.store.dispatch({
@@ -240,11 +253,13 @@ riot.tag('section-title',
 );
 
 riot.tag('budget-category-title',
-  `<input class="{editing ? '' : 'invisible'}" name="input" type="text" placeholder="Category" value="{opts.value}">
-  <span class="{ editing ? 'invisible' : '' }" onclick={edit}>{opts.value}</span>`,
+  `<input class="{editing ? '' : 'invisible'}" name="input" type="text" placeholder="Category" value="{value}">
+  <span class="{ editing ? 'invisible' : '' }" onclick={edit}>{value}</span>`,
 
   function (opts) {
     this.mixin(inplaceEditableMixin);
+
+    this.retrieve = () => opts.store.getState().category.find(c => c.id == opts.id).title;
 
     this.persist = (value) => {
       opts.store.dispatch({
@@ -258,7 +273,7 @@ riot.tag('budget-category-title',
 
 riot.tag('budget-category-amount',
   `<span class="{ editing ? 'invisible' : '' }" onclick={edit}>{amount}</span>
-  <input class="{ editing ? '' : 'invisible' }" name="input" type="text" placeholder="Amount" value="{opts.value}"></input>`,
+  <input class="{ editing ? '' : 'invisible' }" name="input" type="text" placeholder="Amount" value="{value}"></input>`,
 
   function (opts) {
     this.mixin(inplaceEditableMixin);
@@ -271,8 +286,10 @@ riot.tag('budget-category-amount',
       });
     }
 
+    this.retrieve = () => opts.store.getState().category.find(c => c.id == opts.id).amount;
+
     this.on('update', () => {
-      this.amount = formatMoney(opts.value);
+      this.amount = formatMoney(this.retrieve(opts.id));
     });
   }
 );
