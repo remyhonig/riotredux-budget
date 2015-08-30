@@ -7,29 +7,29 @@ import Sortable from 'sortablejs/Sortable'
 
 riot.tag('budget',
   `<ul class="sections">
-      <li data-id="{section.id}" each="{section in opts.stateView().sections}">
+      <li data-id="{section.sectionId}" each="{section in ordering()}">
         <span class="drag-handle">☰</span>
 
         <section-title
           store={parent.opts.store}
-          id="{section.id}">
+          id="{section.sectionId}">
         </section-title>
 
-        <strong>{section.total}</strong>
-        <button type="button" onclick={addCategory(section.id)}>Add</button>
+        <strong><section-total store={parent.opts.store} id="{section.sectionId}"></section-total></strong>
+        <button type="button" onclick={addCategory(section.sectionId)}>Add</button>
 
-        <ul data-id="{section.id}" class="section">
-          <li data-id="{category.id}" each="{category in section.categories}">
+        <ul data-id="{section.sectionId}" class="section">
+          <li data-id="{categoryId}" each="{categoryId in section.categories}">
             <span class="drag-handle">☰</span>
 
             <budget-category-title
               store={parent.parent.opts.store}
-              id="{category.id}">
+              id="{categoryId}">
             </budget-category-title>
 
             <budget-category-amount
               store={parent.parent.opts.store}
-              id="{category.id}">
+              id="{categoryId}">
             </budget-category-amount>
           </li>
         </ul>
@@ -97,20 +97,22 @@ riot.tag('budget',
       );
     }
 
+    self.ordering = () => opts.store.getState().ordering;
+
     /**
      * Items that are moved in the DOM are disconnected from the riot
      * renderer. This workaround works around this issue.
      */
     function updateViewWithWorkaround() {
       console.info('updateViewWithWorkaround');
-      let savedStateView = opts.stateView;
+      let ordering = self.ordering;
 
       // clean the view with this function
-      opts.stateView = () => [];
+      self.ordering = () => [];
       self.update();
 
       // use the original function to refill the view
-      opts.stateView = savedStateView;
+      self.ordering = ordering;
       self.update();
     }
 
@@ -143,6 +145,10 @@ riot.tag('budget',
         id: categoryId
       });
       opts.store.dispatch({
+        type: 'ORDERING_SECTION_ADD',
+        id: sectionId
+      });
+      opts.store.dispatch({
         type: 'ORDERING_CATEGORY_ADD',
         sectionId: sectionId,
         categoryId: categoryId
@@ -169,20 +175,38 @@ riot.tag('budget',
   }
 );
 
+riot.tag('section-total',
+
+  `<span>{value}</span>`,
+
+  function(opts) {
+
+    this.on('update', () => {
+
+      let ids = opts.store
+        .getState()
+        .ordering
+        .find(section => section.sectionId == opts.id)
+        .categories;
+
+      let categories = opts.store.getState()
+        .category
+        .filter(c => ids.indexOf(c.id) > -1);
+
+      this.value = formatMoney(
+        categories.reduce((p, c) => p + c.amount, 0)
+      )
+    });
+  }
+);
+
 let inplaceEditableMixin = {
 
   /**
    * If the tag is being edited or not.
    * This is referenced in the tag it is mixed in
    */
-  editing: null,
-
-  /**
-   * The current value being edited
-   */
-  value: undefined,
-
-  persist: function (value) {
+  persist: function(value) {
     console.log('TODO: Override the this.persist(value)');
   },
 
@@ -195,15 +219,14 @@ let inplaceEditableMixin = {
 
     this.on('mount', () => {
       self.editing = this.retrieve() == '';
-      self.value = this.retrieve();
+      //self.value = this.retrieve();
       let input = this.root.querySelector('input')
 
       function saveInputToState(input, onChange) {
-        let event1 = Rx.Observable.fromEvent(input, 'blur');
-        let event2 = Rx.Observable.fromEvent(input, 'keyup')
+        let blurEvents = Rx.Observable.fromEvent(input, 'blur');
+        let enterPressed = Rx.Observable.fromEvent(input, 'keyup')
           .filter(key => key.keyCode === 13)
-
-        return Rx.Observable.merge(event1, event2)
+        return Rx.Observable.merge(blurEvents, enterPressed)
           .pluck('target', 'value')
           .forEach(onChange);
       }

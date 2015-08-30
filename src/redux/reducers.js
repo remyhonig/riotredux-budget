@@ -8,6 +8,9 @@ export function ordering(state = [], action = {}) {
     case "ORDERING_SET":
       return action.tree;
 
+    case "ORDERING_SECTION_ADD":
+      return [...state, { sectionId: action.id, categories: [] }];
+
     case "ORDERING_CATEGORY_ADD":
       return state.map(section =>
         section.sectionId == action.sectionId ?
