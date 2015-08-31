@@ -21,7 +21,14 @@ ul {
 section-title span, section-title input {
     display: inline-block;
     font-weight: bold;
-    min-width: 21em;
+    min-width: 18em;
+}
+
+
+section-total span, section-total input {
+    display: inline-block;
+    text-align: right;
+    width: 7em;
 }
 
 budget-category-title span, budget-category-title input {

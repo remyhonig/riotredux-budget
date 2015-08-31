@@ -3,6 +3,7 @@ import Rx from 'rx';
 import uuid from 'node-uuid';
 import { formatMoney } from 'app/lib/money';
 import Sortable from 'sortablejs/Sortable'
+import _ from 'underscore';
 
 
 riot.tag('budget',
@@ -15,7 +16,13 @@ riot.tag('budget',
           id="{section.sectionId}">
         </section-title>
 
-        <strong><section-total store={parent.opts.store} id="{section.sectionId}"></section-total></strong>
+        <strong>
+        <section-total
+          store={parent.opts.store}
+          section_id="{section.sectionId}"
+          period_id="{parent.opts.period_id}">
+        </section-total>
+        </strong>
         <button type="button" onclick={addCategory(section.sectionId)}>Add</button>
 
         <ul data-id="{section.sectionId}" class="section">
@@ -29,7 +36,8 @@ riot.tag('budget',
 
             <budget-category-amount
               store={parent.parent.opts.store}
-              id="{categoryId}">
+              id="{categoryId}"
+              period_id="{parent.parent.opts.period_id}">
             </budget-category-amount>
           </li>
         </ul>
@@ -181,26 +189,31 @@ riot.tag('section-total',
 
   function(opts) {
 
+    console.assert(_.isString(opts.period_id));
+    console.assert(_.isString(opts.section_id));
+
     this.on('update', () => {
 
-      let ids = opts.store
+      let categories = opts.store
         .getState()
         .ordering
-        .find(section => section.sectionId == opts.id)
+        .find(section => section.sectionId == opts.section_id)
         .categories;
 
-      let categories = opts.store.getState()
-        .category
-        .filter(c => ids.indexOf(c.id) > -1);
+      let categorybudgets = opts.store.getState()
+        .categorybudget
+        .filter(c => c.periodId == opts.period_id && categories.indexOf(c.categoryId) > -1)
 
       this.value = formatMoney(
-        categories.reduce((p, c) => p + c.amount, 0)
+        categorybudgets.reduce((p, c) => p + c.amount, 0)
       )
     });
   }
 );
 
 let inplaceEditableMixin = {
+
+  editing: false,
 
   /**
    * If the tag is being edited or not.
@@ -219,7 +232,7 @@ let inplaceEditableMixin = {
 
     this.on('mount', () => {
       self.editing = this.retrieve() == '';
-      //self.value = this.retrieve();
+      self.value = this.retrieve();
       let input = this.root.querySelector('input')
 
       function saveInputToState(input, onChange) {
@@ -254,6 +267,7 @@ let inplaceEditableMixin = {
     this.update();
     let input = this.root.querySelector('input');
     input.focus();
+
     input.setSelectionRange(0, String(this.value).length);
   }
 };
@@ -304,17 +318,42 @@ riot.tag('budget-category-amount',
     this.mixin(inplaceEditableMixin);
 
     this.persist = (value) => {
-      opts.store.dispatch({
-        type: "CATEGORY_AMOUNT_SET",
-        id: opts.id,
-        value: parseFloat(value)
-      });
+      let foundAmountId = amountIdFor(opts.id);
+      let amountId = foundAmountId ? foundAmountId : uuid.v4();
+
+      if (!foundAmountId) {
+        opts.store.dispatch({
+          type: "CATEGORYBUDGET_ADD",
+          id: amountId,
+          categoryId: opts.id,
+          periodId: opts.period_id,
+          amount: parseFloat(value)
+        });
+      } else {
+        opts.store.dispatch({
+          type: "CATEGORYBUDGET_SET",
+          id: amountId,
+          amount: parseFloat(value)
+        });
+      }
     }
 
-    this.retrieve = () => opts.store.getState().category.find(c => c.id == opts.id).amount;
+    this.retrieve = () => {
+      let found = opts.store.getState().categorybudget.find(c => c.id == amountIdFor(opts.id));
+      return !_.isUndefined(found) ? (!_.isUndefined(found.amount) ? found.amount : '') : '';
+    }
 
     this.on('update', () => {
-      this.amount = formatMoney(this.retrieve(opts.id));
+      let value = this.retrieve();
+      let amount = value ? value : 0;
+      this.amount = formatMoney(amount);
     });
+
+    function amountIdFor(categoryId) {
+      let cb = opts.store.getState()
+        .categorybudget
+        .find(cb => cb.periodId == opts.period_id && cb.categoryId == categoryId)
+      return cb ? cb.id : undefined;
+    }
   }
 );

@@ -19,8 +19,9 @@ const appStore = createLoggedStore(appReducers);
 appStore.dispatch({type: 'ORDERING_INIT'});
 appStore.dispatch({type: 'CATEGORY_INIT'});
 appStore.dispatch({type: 'SECTION_INIT'});
+appStore.dispatch({type: 'PERIOD_INIT'});
+appStore.dispatch({type: 'CATEGORYBUDGET_INIT'});
 
 riot.mount('budget', {
-  store: appStore,
-  stateView: view.budget(appStore)
+  store: appStore
 });
