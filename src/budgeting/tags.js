@@ -4,7 +4,7 @@ import uuid from 'node-uuid';
 import { formatMoney } from 'app/lib/money';
 import Sortable from 'sortablejs/Sortable'
 import _ from 'underscore';
-
+import * as action from 'app/redux/action-creators';
 
 riot.tag('budget',
   `<ul class="sections">
@@ -74,10 +74,7 @@ riot.tag('budget',
         animation: 100,
         handle: ".drag-handle",
         onEnd: evt => {
-          opts.store.dispatch({
-            type: 'ORDERING_SET',
-            tree: createOrderingTreeFromDom()
-          });
+          opts.store.dispatch(action.setOrdering(createOrderingTreeFromDom()));
           updateView();
         }
       });
@@ -95,10 +92,7 @@ riot.tag('budget',
             animation: 100,
             handle: ".drag-handle",
             onEnd: evt => {
-              opts.store.dispatch({
-                type: 'ORDERING_SET',
-                tree: createOrderingTreeFromDom()
-              });
+              opts.store.dispatch(action.setOrdering(createOrderingTreeFromDom()));
               updateView();
             }
           })
@@ -144,23 +138,10 @@ riot.tag('budget',
     this.addSection = () => {
       let sectionId = uuid.v4();
       let categoryId = uuid.v4();
-      opts.store.dispatch({
-        type: 'SECTION_ADD',
-        id: sectionId
-      });
-      opts.store.dispatch({
-        type: 'CATEGORY_ADD',
-        id: categoryId
-      });
-      opts.store.dispatch({
-        type: 'ORDERING_SECTION_ADD',
-        id: sectionId
-      });
-      opts.store.dispatch({
-        type: 'ORDERING_CATEGORY_ADD',
-        sectionId: sectionId,
-        categoryId: categoryId
-      });
+      opts.store.dispatch(action.addSection(sectionId));
+      opts.store.dispatch(action.addCategory(categoryId));
+      opts.store.dispatch(action.addOrderingSection(sectionId));
+      opts.store.dispatch(action.addOrderingCategory(sectionId, categoryId));
       updateView();
     };
 
@@ -169,15 +150,8 @@ riot.tag('budget',
      */
     this.addCategory = sectionId => () => {
       let categoryId = uuid.v4();
-      opts.store.dispatch({
-          type: 'ORDERING_CATEGORY_ADD',
-          sectionId: sectionId,
-          categoryId: categoryId
-      });
-      opts.store.dispatch({
-        type: 'CATEGORY_ADD',
-        id: categoryId
-      });
+      opts.store.dispatch(action.addOrderingCategory(sectionId, categoryId));
+      opts.store.dispatch(action.addCategory(categoryId));
       updateView();
     }
   }
@@ -282,11 +256,7 @@ riot.tag('section-title',
     this.retrieve = () => opts.store.getState().section.find(c => c.id == opts.id).title;
 
     this.persist = (value) => {
-      opts.store.dispatch({
-        type: "SECTION_TITLE_SET",
-        id: opts.id,
-        value: value
-      });
+      opts.store.dispatch(action.setSectionTitle(opts.id, value));
     }
   }
 );
@@ -301,11 +271,7 @@ riot.tag('budget-category-title',
     this.retrieve = () => opts.store.getState().category.find(c => c.id == opts.id).title;
 
     this.persist = (value) => {
-      opts.store.dispatch({
-        type: "CATEGORY_TITLE_SET",
-        id: opts.id,
-        value: value
-      });
+      opts.store.dispatch(action.setCategoryTitle(opts.id, value));
     }
   }
 );
@@ -322,26 +288,16 @@ riot.tag('budget-category-amount',
       let amountId = foundAmountId ? foundAmountId : uuid.v4();
 
       if (!foundAmountId) {
-        opts.store.dispatch({
-          type: "CATEGORYBUDGET_ADD",
-          id: amountId,
-          categoryId: opts.id,
-          periodId: opts.period_id,
-          amount: parseFloat(value)
-        });
+        opts.store.dispatch(action.addCategoryBudget(amountId, opts.period_id, opts.id, value));
       } else {
-        opts.store.dispatch({
-          type: "CATEGORYBUDGET_SET",
-          id: amountId,
-          amount: parseFloat(value)
-        });
+        opts.store.dispatch(action.setCategoryBudget(amountId, value));
       }
-    }
+    };
 
     this.retrieve = () => {
       let found = opts.store.getState().categorybudget.find(c => c.id == amountIdFor(opts.id));
       return !_.isUndefined(found) ? (!_.isUndefined(found.amount) ? found.amount : '') : '';
-    }
+    };
 
     this.on('update', () => {
       let value = this.retrieve();
