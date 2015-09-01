@@ -7,10 +7,13 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { createSelector } from 'reselect';
 
 // application
-import 'app/budgeting/tags'
 import * as reducers from 'app/redux/reducers';
 import { logger } from 'app/redux/middleware';
-import * as view from 'app/budgeting/store-view';
+import 'app/tags/budget';
+import 'app/tags/category-amount';
+import 'app/tags/category-title';
+import 'app/tags/section-title';
+import 'app/tags/section-total';
 
 const appReducers = combineReducers(reducers);
 const createLoggedStore = applyMiddleware(logger)(createStore);
