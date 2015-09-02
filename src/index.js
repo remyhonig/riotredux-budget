@@ -5,6 +5,7 @@ import 'babel/polyfill';
 import riot from 'riot';
 import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { createSelector } from 'reselect';
+import * as action from './redux/action-consts.js';
 
 // application
 import * as reducers from 'app/redux/reducers';
@@ -19,11 +20,11 @@ const appReducers = combineReducers(reducers);
 const createLoggedStore = applyMiddleware(logger)(createStore);
 const appStore = createLoggedStore(appReducers);
 
-appStore.dispatch({type: 'ORDERING_INIT'});
-appStore.dispatch({type: 'CATEGORY_INIT'});
-appStore.dispatch({type: 'SECTION_INIT'});
-appStore.dispatch({type: 'PERIOD_INIT'});
-appStore.dispatch({type: 'CATEGORYBUDGET_INIT'});
+appStore.dispatch({ type: action.ORDERING_INIT });
+appStore.dispatch({ type: action.CATEGORY_INIT });
+appStore.dispatch({ type: action.SECTION_INIT });
+appStore.dispatch({ type: action.PERIOD_INIT });
+appStore.dispatch({ type: action.CATEGORYBUDGET_INIT });
 
 riot.mount('budget', {
   store: appStore

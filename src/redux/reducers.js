@@ -1,17 +1,18 @@
 import uuid from 'node-uuid';
 import { moveUpCategory } from 'app/lib/grouped-ordering';
+import * as type from './action-consts.js'
 
 export function period(state = [], action = {}) {
   switch (action.type) {
 
-    case "PERIOD_INCOME_SET":
+    case type.PERIOD_INCOME_SET:
       return state.map(period =>
           period.id === action.id ?
             Object.assign({}, period, { income: action.value }) :
             period
       );
 
-    case "PERIOD_ADD":
+    case type.PERIOD_ADD:
       return [...state, {
         id: action.id,
         year: action.year,
@@ -19,7 +20,7 @@ export function period(state = [], action = {}) {
         income: 0
       }];
 
-    case 'PERIOD_INIT':
+    case type.PERIOD_INIT:
       return [
         {id: "1", year: 2015, month: 9, income: 2000}
       ]
@@ -32,14 +33,14 @@ export function period(state = [], action = {}) {
 export function categorybudget(state = [], action = {}) {
   switch (action.type) {
 
-    case "CATEGORYBUDGET_SET":
+    case type.CATEGORYBUDGET_SET:
       return state.map(categorybudget =>
           categorybudget.id === action.id ?
             Object.assign({}, categorybudget, { amount: action.amount }) :
             categorybudget
       );
 
-    case "CATEGORYBUDGET_ADD":
+    case type.CATEGORYBUDGET_ADD:
       return [...state, {
         id: action.id,
         categoryId: action.categoryId,
@@ -47,7 +48,7 @@ export function categorybudget(state = [], action = {}) {
         amount: action.amount
       }];
 
-    case 'CATEGORYBUDGET_INIT':
+    case type.CATEGORYBUDGET_INIT:
       return [
         {id: "1", periodId: "1", categoryId: "1", amount: 100},
         {id: "2", periodId: "1", categoryId: "2", amount: 200},
@@ -65,20 +66,20 @@ export function categorybudget(state = [], action = {}) {
 export function ordering(state = [], action = {}) {
   switch (action.type) {
 
-    case "ORDERING_SET":
+    case type.ORDERING_SET:
       return action.tree;
 
-    case "ORDERING_SECTION_ADD":
+    case type.ORDERING_SECTION_ADD:
       return [...state, { sectionId: action.id, categories: [] }];
 
-    case "ORDERING_CATEGORY_ADD":
+    case type.ORDERING_CATEGORY_ADD:
       return state.map(section =>
         section.sectionId == action.sectionId ?
           Object.assign({}, section, { categories: [...section.categories, action.categoryId] }) :
           section
       );
 
-    case "ORDERING_INIT":
+    case type.ORDERING_INIT:
       return [
         {
           sectionId: "1",
@@ -98,20 +99,20 @@ export function ordering(state = [], action = {}) {
 export function section(state = [], action = {}) {
   switch (action.type) {
 
-    case "SECTION_TITLE_SET":
+    case type.SECTION_TITLE_SET:
       return state.map(section =>
           section.id === action.id ?
             Object.assign({}, section, { title: action.value }) :
             section
       );
 
-    case "SECTION_ADD":
+    case type.SECTION_ADD:
       return [...state, {
       id: action.id ? action.id : uuid.v4(),
       title: ""
     }];
 
-    case "SECTION_INIT":
+    case type.SECTION_INIT:
       return [
         {id: "1", title: "Een"},
         {id: "2", title: "Twee"}
@@ -125,28 +126,28 @@ export function section(state = [], action = {}) {
 export function category(state = [], action = {}) {
   switch (action.type) {
 
-    case "CATEGORY_AMOUNT_SET":
+    case type.CATEGORY_AMOUNT_SET:
       return state.map(category =>
           category.id === action.id ?
             Object.assign({}, category, { amount: action.value }) :
             category
       );
 
-    case "CATEGORY_TITLE_SET":
+    case type.CATEGORY_TITLE_SET:
       return state.map(category =>
           category.id === action.id ?
             Object.assign({}, category, { title: action.value }) :
             category
       );
 
-    case "CATEGORY_ADD":
+    case type.CATEGORY_ADD:
       return [...state, {
         id: action.id,
         title: "",
         amount: 0
       }];
 
-    case 'CATEGORY_INIT':
+    case type.CATEGORY_INIT:
       return [
         {id: "1", title: "Leuke Dingen", amount: 100},
         {id: "2", title: "Vakantie", amount: 400},
