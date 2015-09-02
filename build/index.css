@@ -1,31 +1,54 @@
-todo-item {
-  cursor: pointer;
-}
-todo-item .done {
-  text-decoration: line-through;
-}
 .invisible {
     display: none;
 }
 
 .section {
-    margin-top: 10px;
+    margin-top: 5px;
     min-height: 50px;
+    border-bottom-color: gray;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
 }
 
 ul {
     list-style: none;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
+    padding-left:0;
+    line-height: 1.7em;
+}
+
+input { line-height: 1em !important; }
+
+.section-commands {
+    color: white;
+}
+
+section-title:hover + .section-commands {
+    color: black;
+}
+
+.section-commands:hover {
+    color: black;
+}
+
+tree {
+    display: inline-block;
+}
+
+amounts {
+    display: inline-block;
 }
 
 section-title span, section-title input {
+    margin-top: 5px;
     display: inline-block;
     font-weight: bold;
-    min-width: 18em;
+    min-width: 12em;
+    cursor: cell;
 }
 
-
-section-total span, section-total input {
+section-total, section-total input {
+    margin-top: 5px;
     display: inline-block;
     text-align: right;
     width: 7em;
@@ -34,10 +57,12 @@ section-total span, section-total input {
 budget-category-title span, budget-category-title input {
     display: inline-block;
     min-width: 15em;
+    cursor: cell;
 }
 
 budget-category-amount span, budget-category-amount input {
     display: inline-block;
     text-align: right;
     width: 7em;
+    cursor: cell;
 }

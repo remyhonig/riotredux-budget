@@ -6,15 +6,19 @@ import riot from 'riot';
 import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { createSelector } from 'reselect';
 import * as action from './redux/action-consts.js';
+import 'font-awesome-webpack';
 
 // application
-import * as reducers from 'app/redux/reducers';
-import { logger } from 'app/redux/middleware';
-import 'app/tags/budget';
-import 'app/tags/category-amount';
-import 'app/tags/category-title';
-import 'app/tags/section-title';
-import 'app/tags/section-total';
+import * as reducers from './redux/reducers.js';
+import { logger } from './redux/middleware.js';
+import './tags/tree.js';
+import './tags/budget.js';
+import './tags/amounts.js';
+import './tags/category-amount.js';
+import './tags/category-title.js';
+import './tags/section-title.js';
+import './tags/section-total.js';
+import './tags/section-total.js';
 
 const appReducers = combineReducers(reducers);
 const createLoggedStore = applyMiddleware(logger)(createStore);
