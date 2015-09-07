@@ -24,7 +24,7 @@ export var inplaceEditableMixin = {
     this.on('mount', () => {
       self.editing = this.retrieve() == '';
       self.value = this.retrieve();
-      let input = this.root.querySelector('input')
+      let input = this.root.querySelector('input');
 
       function saveInputToState(input, onChange) {
         let blurEvents = Rx.Observable.fromEvent(input, 'blur');

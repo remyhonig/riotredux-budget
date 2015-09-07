@@ -23,7 +23,7 @@ export function period(state = [], action = {}) {
     case type.PERIOD_INIT:
       return [
         {id: "1", year: 2015, month: 9, income: 2000}
-      ]
+      ];
 
     default:
       return state;
@@ -56,7 +56,7 @@ export function categorybudget(state = [], action = {}) {
         {id: "4", periodId: "1", categoryId: "4", amount: 400},
         {id: "5", periodId: "1", categoryId: "5", amount: 500},
         {id: "6", periodId: "1", categoryId: "6", amount: 600}
-      ]
+      ];
 
     default:
       return state;
