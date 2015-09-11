@@ -11,6 +11,13 @@ import 'font-awesome-webpack';
 // application
 import * as reducers from './redux/reducers.js';
 import { logger } from './redux/middleware.js';
+import './tags/main.js';
+import './tags/section.js';
+import './tags/categories.js';
+import './tags/period.js';
+import './tags/period-spent-summary.js';
+import './tags/income-timeline.js';
+
 import './tags/tree.js';
 import './tags/budget.js';
 import './tags/amounts.js';
@@ -30,6 +37,6 @@ appStore.dispatch({ type: action.SECTION_INIT });
 appStore.dispatch({ type: action.PERIOD_INIT });
 appStore.dispatch({ type: action.CATEGORYBUDGET_INIT });
 
-riot.mount('budget', {
+riot.mount('main', {
   store: appStore
 });

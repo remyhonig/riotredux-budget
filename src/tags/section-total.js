@@ -21,7 +21,7 @@ riot.tag('section-total',
 
       let categorybudgets = opts.store.getState()
         .categorybudget
-        .filter(c => c.periodId == opts.period_id && categories.indexOf(c.categoryId) > -1)
+        .filter(c => c.periodId == opts.period_id && categories.indexOf(c.categoryId) > -1);
 
       this.value = formatMoney(
         categorybudgets.reduce((p, c) => p + c.amount, 0)

@@ -2,13 +2,23 @@ import uuid from 'node-uuid';
 import { moveUpCategory } from 'app/lib/grouped-ordering';
 import * as type from './action-consts.js'
 
+export function selectedPeriod(state = "1", action = {}) {
+  switch (action.type) {
+    case type.PERIOD_SELECT:
+      return action.value;
+
+    default:
+      return state;
+  }
+}
+
 export function period(state = [], action = {}) {
   switch (action.type) {
 
     case type.PERIOD_INCOME_SET:
       return state.map(period =>
           period.id === action.id ?
-            Object.assign({}, period, { income: action.value }) :
+            Object.assign({}, period, { amount: action.value }) :
             period
       );
 
@@ -17,12 +27,14 @@ export function period(state = [], action = {}) {
         id: action.id,
         year: action.year,
         month: action.month,
-        income: 0
+        day: action.day,
+        amount: 0
       }];
 
     case type.PERIOD_INIT:
       return [
-        {id: "1", year: 2015, month: 9, income: 2000}
+        {id: "1", year: 2015, month: 9, day: 12, amount: 2000},
+        {id: "2", year: 2015, month: 9, day: 22, amount: 2000}
       ];
 
     default:
@@ -150,11 +162,11 @@ export function category(state = [], action = {}) {
     case type.CATEGORY_INIT:
       return [
         {id: "1", title: "Leuke Dingen", amount: 100},
-        {id: "2", title: "Vakantie", amount: 400},
-        {id: "3", title: "Verzekering", amount: 120},
-        {id: "4", title: "Leuke Dingen", amount: 300},
-        {id: "5", title: "Vakantie", amount: 100},
-        {id: "6", title: "Verzekering", amount: 121}
+        {id: "2", title: "Vakantie"},
+        {id: "3", title: "Verzekering"},
+        {id: "4", title: "Leuke Dingen"},
+        {id: "5", title: "Vakantie"},
+        {id: "6", title: "Verzekering"}
       ];
 
     default:

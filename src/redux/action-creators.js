@@ -31,6 +31,14 @@ export function addOrderingSection(sectionId) {
   }
 }
 
+export function setOrderingSectionCategories(sectionId, categories) {
+  return {
+    type: type.ORDERING_SECTION_CATEGORIES_SET,
+    sectionId: sectionId,
+    categories: categories
+  }
+}
+
 export function setOrdering(tree) {
   return {
     type: type.ORDERING_SET,
@@ -67,5 +75,12 @@ export function setCategoryBudget(id, value) {
     type: type.CATEGORYBUDGET_SET,
     id: id,
     amount: parseFloat(value)
+  }
+}
+
+export function selectPeriod(value) {
+  return {
+    type: type.PERIOD_SELECT,
+    value: value
   }
 }
